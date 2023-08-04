@@ -7,6 +7,7 @@ import (
 	"sync"
 )
 
+// Topic is a collection of subscribers.
 type Topic struct {
 	events chan Event
 
@@ -15,6 +16,7 @@ type Topic struct {
 	mu sync.RWMutex
 }
 
+// fanout broadcasts events from the event channel to this topic's subscribers.
 func (t *Topic) fanout() {
 	for event := range t.events {
 		t.mu.RLock()
@@ -27,6 +29,7 @@ func (t *Topic) fanout() {
 	}
 }
 
+// Broadcast enqueues an event for all subscribers of this topic.
 func (t *Topic) Broadcast(event Event) error {
 	select {
 	case t.events <- event:
@@ -36,6 +39,7 @@ func (t *Topic) Broadcast(event Event) error {
 	}
 }
 
+// Subscribe adds a subscriber to this topic.
 func (t *Topic) Subscribe(sub Subscriber) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
@@ -43,6 +47,7 @@ func (t *Topic) Subscribe(sub Subscriber) {
 	t.subscribers[sub.id] = sub
 }
 
+// Unsubscribe removes a subscriber from this topic when the context is cancelled.
 func (t *Topic) Unsubscribe(ctx context.Context, sub Subscriber) {
 	<-ctx.Done()
 
@@ -56,6 +61,9 @@ func (t *Topic) Unsubscribe(ctx context.Context, sub Subscriber) {
 	}
 }
 
+// NewTopic returns a new Topic.
+// The backlog parameter determines how many events are buffered before blocking.
+// The fanout goroutine is started immediately.
 func NewTopic(backlog int) *Topic {
 	t := &Topic{
 		events:      make(chan Event, backlog),

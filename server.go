@@ -5,15 +5,12 @@ import (
 	"net/http"
 )
 
-type Event interface {
-	Type() string
-	Data() []byte
-}
-
+// EventServer is the event server.
 type EventServer struct {
 	topics *Topics
 }
 
+// ServeHTTP implements http.Handler to serve events.
 func (e *EventServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	topic := e.topics.Create(r.URL.Query().Get("stream"))
 
@@ -27,6 +24,7 @@ func (e *EventServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Broadcast sends an event to all subscribers of the named topic.
 func (e *EventServer) Broadcast(name string, event Event) error {
 	topic, err := e.topics.get(name)
 	if err != nil {
@@ -35,10 +33,12 @@ func (e *EventServer) Broadcast(name string, event Event) error {
 	return topic.Broadcast(event)
 }
 
+// Create creates a new topic.
 func (e *EventServer) Create(name string) {
 	e.topics.Create(name)
 }
 
+// NewEventServer returns an empty EventServer.
 func NewEventServer() *EventServer {
 	return &EventServer{
 		topics: NewTopics(),

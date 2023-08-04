@@ -8,11 +8,13 @@ import (
 	"github.com/lithammer/shortuuid/v4"
 )
 
+// Subscriber is an individual topic client.
 type Subscriber struct {
 	id     string
 	events chan Event
 }
 
+// Push enqueues an event for the subscriber.
 func (s Subscriber) Push(event Event) error {
 	select {
 	case s.events <- event:
@@ -22,6 +24,7 @@ func (s Subscriber) Push(event Event) error {
 	}
 }
 
+// WriteEvents writes headers and streams events to the provided ResponseWriter.
 func (s Subscriber) WriteEvents(w http.ResponseWriter) error {
 	// Confirm connection is flushable
 	f, ok := w.(http.Flusher)
@@ -56,10 +59,12 @@ func (s Subscriber) WriteEvents(w http.ResponseWriter) error {
 	return nil
 }
 
+// Close closes the subscriber channel, ending WriteEvents' loop.
 func (s Subscriber) Close() {
 	close(s.events)
 }
 
+// NewSubscriber returns a new Subscriber.
 func NewSubscriber() Subscriber {
 	return Subscriber{
 		id:     shortuuid.New(),
