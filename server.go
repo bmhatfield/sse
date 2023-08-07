@@ -38,6 +38,10 @@ func (e *EventServer) Create(name string) {
 	e.topics.Create(name)
 }
 
+func (e *EventServer) Stats() Stats {
+	return e.topics.Stats()
+}
+
 // NewEventServer returns an empty EventServer.
 func NewEventServer() *EventServer {
 	return &EventServer{
