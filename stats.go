@@ -18,3 +18,17 @@ type Stats struct {
 
 	ByTopic map[string]TopicStats
 }
+
+func (s Stats) Empty() bool {
+	if s.Topics == 0 {
+		return true
+	}
+
+	for _, t := range s.ByTopic {
+		if t.Subscribers > 0 {
+			return false
+		}
+	}
+
+	return true
+}
